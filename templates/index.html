@@ -1,92 +1,55 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Weather Pro</title>
-
-<style>
-body {
-    font-family: Arial;
-    text-align: center;
-    transition: 0.3s;
-}
-
-.light { background: #74ebd5; color: black; }
-.dark { background: #1e1e1e; color: white; }
-
-.card {
-    background: white;
-    padding: 20px;
-    margin: 20px;
-    border-radius: 15px;
-    display: inline-block;
-}
-
-.dark .card { background: #333; }
-
-button {
-    padding: 10px;
-    margin: 5px;
-    border-radius: 10px;
-    border: none;
-    cursor: pointer;
-}
-</style>
-
-<script>
-function toggleMode() {
-    document.body.classList.toggle("dark");
-}
-
-function getLocation() {
-    navigator.geolocation.getCurrentPosition(pos => {
-        fetch("/location", {
-            method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({
-                lat: pos.coords.latitude,
-                lon: pos.coords.longitude
-            })
-        })
-        .then(res => res.json())
-        .then(data => {
-            alert("📍 " + data.name + " : " + data.main.temp + "°C");
-        });
-    });
-}
-</script>
-
+    <title>Weather App</title>
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+            background: #0f172a;
+            color: white;
+            padding-top: 100px;
+        }
+        input {
+            padding: 10px;
+            width: 200px;
+            border-radius: 5px;
+            border: none;
+        }
+        button {
+            padding: 10px;
+            border: none;
+            background: #38bdf8;
+            color: black;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .box {
+            margin-top: 20px;
+        }
+    </style>
 </head>
+<body>
 
-<body class="light">
+    <h1>🌦 Weather App</h1>
 
-<h1>🌤 Weather Pro</h1>
+    <form action="/location" method="POST">
+        <input type="text" name="city" placeholder="Enter city name">
+        <button type="submit">Search</button>
+    </form>
 
-<button onclick="toggleMode()">🌙 Toggle Mode</button>
-<button onclick="getLocation()">📍 My Location</button>
+    <div class="box">
+        {% if weather %}
+            <h2>{{ weather.city }}</h2>
+            <p>🌡 Temperature: {{ weather.temperature }} °C</p>
+            <p>☁ Weather: {{ weather.description }}</p>
+            <p>💧 Humidity: {{ weather.humidity }}%</p>
+        {% endif %}
 
-<form method="POST">
-    <input type="text" name="city" placeholder="Enter city" required>
-    <button type="submit">Search</button>
-</form>
-
-{% if weather %}
-<div class="card">
-    <h2>{{ weather.city }}</h2>
-    <img src="https://openweathermap.org/img/wn/{{ weather.icon }}@2x.png">
-    <h3>{{ weather.temp }}°C</h3>
-    <p>{{ weather.desc }}</p>
-</div>
-{% endif %}
-
-<h2>📊 5-Day Forecast</h2>
-
-{% for day in forecast %}
-<div class="card">
-    <p>{{ day.time }}</p>
-    <img src="https://openweathermap.org/img/wn/{{ day.icon }}.png">
-    <p>{{ day.temp }}°C</p>
-</div>
-{% endfor %}
+        {% if error %}
+            <p style="color:red;">{{ error }}</p>
+        {% endif %}
+    </div>
 
 </body>
 </html>

@@ -1,60 +1,43 @@
-from flask import Flask, render_template, request, jsonify
+from flask import Flask, render_template, request
 import requests
 import os
 
 app = Flask(__name__)
 
-API_KEY = os.environ.get("fa476182e7c6a7459a3e4a3f4057b19d")
+# 🔑 Replace with your OpenWeather API key
+API_KEY = "fa476182e7c6a7459a3e4a3f4057b19d"
 
-@app.route("/", methods=["GET", "POST"])
-def index():
-    weather = None
-    forecast = []
+@app.route('/')
+def home():
+    return render_template("index.html")
 
-    if request.method == "POST":
-        city = request.form.get("city")
-
-        # 🔥 Current weather
-        url = f"https://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
-        res = requests.get(url).json()
-
-        if res.get("cod") == 200:
-            weather = {
-                "city": res["name"],
-                "temp": res["main"]["temp"],
-                "desc": res["weather"][0]["description"],
-                "icon": res["weather"][0]["icon"]
-            }
-
-            # 🔥 5-day forecast
-            f_url = f"https://api.openweathermap.org/data/2.5/forecast?q={city}&appid={API_KEY}&units=metric"
-            f_res = requests.get(f_url).json()
-
-            for i in range(0, 40, 8):  # daily data
-                day = f_res["list"][i]
-                forecast.append({
-                    "temp": day["main"]["temp"],
-                    "icon": day["weather"][0]["icon"],
-                    "time": day["dt_txt"].split(" ")[0]
-                })
-
-    return render_template("index.html", weather=weather, forecast=forecast)
-
-
-# 📍 LOCATION API
-@app.route("/location", methods=["POST"])
+@app.route('/location', methods=['POST'])
 def location():
-    data = request.get_json()
-    lat = data.get("lat")
-    lon = data.get("lon")
+    city = request.form.get('city')
 
-    url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={API_KEY}&units=metric"
-    res = requests.get(url).json()
+    if not city:
+        return render_template("index.html", error="Please enter a city name")
 
-    return jsonify(res)
+    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
+
+    response = requests.get(url)
+
+    if response.status_code != 200:
+        return render_template("index.html", error="City not found!")
+
+    data = response.json()
+
+    weather_data = {
+        "city": data["name"],
+        "temperature": data["main"]["temp"],
+        "description": data["weather"][0]["description"],
+        "humidity": data["main"]["humidity"]
+    }
+
+    return render_template("index.html", weather=weather_data)
 
 
-# ✅ Render
+# 🔥 IMPORTANT FOR RENDER
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
