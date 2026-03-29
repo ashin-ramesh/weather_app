@@ -15,9 +15,23 @@ except ImportError:
 
 app = Flask(__name__)
 
-API_KEY = os.environ.get("OPENWEATHER_API_KEY", "").strip()
 BASE = "https://api.openweathermap.org/data/2.5"
 IMG = "https://openweathermap.org/img/wn"
+
+# Render / local: set exactly OPENWEATHER_API_KEY (also accepts common typos).
+_ENV_KEY_NAMES = (
+    "OPENWEATHER_API_KEY",
+    "OPEN_WEATHER_API_KEY",
+    "OWM_API_KEY",
+)
+
+
+def openweather_api_key():
+    for name in _ENV_KEY_NAMES:
+        v = os.environ.get(name, "").strip()
+        if v:
+            return v
+    return ""
 
 # OpenWeather "main" -> UI theme (CSS class suffix)
 THEME_HEX = {
@@ -63,9 +77,15 @@ def home():
     forecast = []
     error = None
     theme = "default"
+    api_key = openweather_api_key()
 
-    if not API_KEY:
-        error = "Server missing OPENWEATHER_API_KEY. Add it in .env (local) or host env (Render)."
+    if not api_key:
+        error = (
+            "API key Render-il set aakkiyitilla. Steps: render.com → Web Service (weather_app) → "
+            "Environment → Add Environment Variable → Key must be exactly OPENWEATHER_API_KEY "
+            "→ Value = OpenWeather key → Save → Manual Deploy (Clear build cache optional). "
+            "Local: .env file same folder as app.py."
+        )
         return render_template(
             "index.html",
             weather=weather,
@@ -81,7 +101,7 @@ def home():
         if not city:
             error = "City enter cheyyu."
         else:
-            params = {"q": city, "appid": API_KEY, "units": "metric"}
+            params = {"q": city, "appid": api_key, "units": "metric"}
             res = requests.get(f"{BASE}/weather", params=params, timeout=10)
 
             if res.status_code == 200:
