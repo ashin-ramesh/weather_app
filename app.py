@@ -15,7 +15,7 @@ except ImportError:
 
 app = Flask(__name__)
 
-API_KEY = os.environ.get("OPENWEATHER_API_KEY", "").strip()
+API_KEY = os.environ.get("fa476182e7c6a7459a3e4a3f4057b19d", "").strip()
 BASE = "https://api.openweathermap.org/data/2.5"
 IMG = "https://openweathermap.org/img/wn"
 
