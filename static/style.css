@@ -1,0 +1,68 @@
+body {
+    margin: 0;
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: 0.5s;
+}
+
+.container {
+    background: rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(15px);
+    padding: 30px;
+    border-radius: 25px;
+    color: white;
+    text-align: center;
+    width: 380px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    animation: fadeIn 1s ease;
+}
+
+@keyframes fadeIn {
+    from {opacity: 0; transform: translateY(20px);}
+    to {opacity: 1; transform: translateY(0);}
+}
+
+input {
+    padding: 12px;
+    border-radius: 12px;
+    border: none;
+    width: 65%;
+}
+
+button {
+    padding: 12px;
+    border-radius: 12px;
+    background: #ff7eb3;
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.card {
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.2);
+}
+
+.extra {
+    margin-top: 10px;
+}
+
+/* Dynamic backgrounds */
+.clear {
+    background: linear-gradient(135deg, #f7971e, #ffd200);
+}
+
+.clouds {
+    background: linear-gradient(135deg, #757f9a, #d7dde8);
+}
+
+.rain {
+    background: linear-gradient(135deg, #373B44, #4286f4);
+}

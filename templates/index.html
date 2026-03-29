@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Weather App 🌦</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body class="{{ weather.desc if weather else '' }}">
+
+<div class="container">
+    <h1>🌦 Weather App</h1>
+
+    <form method="POST">
+        <input type="text" name="city" placeholder="Enter city..." required>
+        <button type="submit">Search</button>
+    </form>
+
+    <button onclick="getLocation()">📍 Use My Location</button>
+
+    {% if weather %}
+    <div class="card">
+        <h2>{{ weather.city }}</h2>
+        <img src="http://openweathermap.org/img/wn/{{ weather.icon }}@2x.png">
+        <p>🌡 {{ weather.temp }}°C</p>
+        <p>{{ weather.desc }}</p>
+
+        <div class="extra">
+            💧 {{ weather.humidity }}% |
+            🌬 {{ weather.wind }} m/s
+        </div>
+    </div>
+    {% endif %}
+
+    <h3>Recent Searches</h3>
+    <ul>
+        {% for item in history %}
+        <li>{{ item }}</li>
+        {% endfor %}
+    </ul>
+</div>
+
+<script>
+function getLocation() {
+    navigator.geolocation.getCurrentPosition(position => {
+        fetch("/location", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                lat: position.coords.latitude,
+                lon: position.coords.longitude
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.error) {
+                alert("Location not found 😢");
+            } else {
+                document.querySelector(".card")?.remove();
+
+                const card = document.createElement("div");
+                card.className = "card";
+
+                card.innerHTML = `
+                    <h2>${data.city}</h2>
+                    <img src="http://openweathermap.org/img/wn/${data.icon}@2x.png">
+                    <p>🌡 ${data.temp}°C</p>
+                    <p>${data.desc}</p>
+                `;
+
+                document.querySelector(".container").appendChild(card);
+            }
+        });
+    });
+}
+</script>
+
+</body>
+</html>
