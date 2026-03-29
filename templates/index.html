@@ -1,136 +1,111 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Weather Mobile</title>
-
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <style>
-        body {
-            margin: 0;
-            font-family: 'Segoe UI';
-            color: white;
-        }
-
-        .app {
-            max-width: 400px;
-            margin: auto;
-            padding: 20px;
-        }
-
-        .search {
-            display: flex;
-            gap: 10px;
-        }
-
-        input {
-            flex: 1;
-            padding: 12px;
-            border-radius: 25px;
-            border: none;
-            outline: none;
-        }
-
-        button {
-            padding: 12px;
-            border-radius: 25px;
-            border: none;
-            background: white;
-            color: black;
-            cursor: pointer;
-        }
-
-        .main-weather {
-            text-align: center;
-            margin-top: 30px;
-        }
-
-        .temp {
-            font-size: 65px;
-            font-weight: bold;
-        }
-
-        .forecast {
-            margin-top: 30px;
-            display: flex;
-            overflow-x: auto;
-            gap: 12px;
-        }
-
-        .card {
-            min-width: 90px;
-            background: rgba(255,255,255,0.2);
-            padding: 12px;
-            border-radius: 15px;
-            text-align: center;
-        }
-
-        img {
-            width: 50px;
-        }
-
-        .error {
-            color: #ff6b6b;
-            text-align: center;
-        }
-    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="{{ theme_color }}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>SkyPulse — Weather</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+<body class="theme-{{ theme }}">
 
-<body
+    <div class="bg-orb bg-orb-a" aria-hidden="true"></div>
+    <div class="bg-orb bg-orb-b" aria-hidden="true"></div>
 
-{% if weather %}
-    {% if 'rain' in weather.description %}
-        style="background: linear-gradient(#373B44, #4286f4);"
-    {% elif 'clear' in weather.description %}
-        style="background: linear-gradient(#f7971e, #ffd200);"
-    {% elif 'cloud' in weather.description %}
-        style="background: linear-gradient(#757f9a, #d7dde8);"
-    {% else %}
-        style="background: linear-gradient(#4facfe, #00f2fe);"
-    {% endif %}
-{% else %}
-    style="background: linear-gradient(#4facfe, #00f2fe);"
-{% endif %}
->
+    <div class="app">
+        <header class="top-bar">
+            <div class="brand">
+                <span class="brand-icon" aria-hidden="true">◉</span>
+                <div>
+                    <h1 class="brand-title">SkyPulse</h1>
+                    <p class="brand-tag">Live weather</p>
+                </div>
+            </div>
+        </header>
 
-<div class="app">
+        <form method="POST" class="search" id="weather-form" autocomplete="off">
+            <label class="sr-only" for="city-input">City</label>
+            <div class="search-inner">
+                <span class="search-icon" aria-hidden="true">⌕</span>
+                <input
+                    id="city-input"
+                    type="text"
+                    name="city"
+                    placeholder="City name type cheyyu…"
+                    value="{{ request.form.get('city', '') }}"
+                    required
+                    maxlength="80"
+                >
+            </div>
+            <button type="submit" class="btn-search" id="search-btn">
+                <span class="btn-label">Search</span>
+                <span class="btn-spinner" aria-hidden="true"></span>
+            </button>
+        </form>
 
-    <!-- 🔍 SEARCH -->
-    <form method="POST" class="search">
-        <input type="text" name="city" placeholder="Search city..." required>
-        <button>🔍</button>
-    </form>
+        {% if error %}
+        <p class="msg msg-error" role="alert">{{ error }}</p>
+        {% endif %}
 
-    <!-- 🌤 CURRENT WEATHER -->
-    {% if weather %}
-    <div class="main-weather">
-        <h2>{{ weather.city }}</h2>
-        <img src="http://openweathermap.org/img/wn/{{ weather.icon }}@2x.png">
-        <div class="temp">{{ weather.temperature }}°C</div>
-        <p>{{ weather.description }}</p>
-        <p>💧 {{ weather.humidity }}%</p>
+        {% if weather %}
+        <section class="hero-card" aria-live="polite">
+            <div class="hero-top">
+                <div>
+                    <h2 class="city-name">{{ weather.city }}{% if weather.country %}<span class="country">{{ weather.country }}</span>{% endif %}</h2>
+                    <p class="desc">{{ weather.description }}</p>
+                </div>
+                <img
+                    class="hero-icon"
+                    src="{{ img_base }}/{{ weather.icon }}@4x.png"
+                    width="120"
+                    height="120"
+                    alt=""
+                >
+            </div>
+            <div class="temp-block">
+                <span class="temp-value">{{ weather.temperature }}</span>
+                <span class="temp-unit">°C</span>
+            </div>
+            <p class="feels">Feels like <strong>{{ weather.feels_like }}°C</strong></p>
+
+            <div class="stats">
+                <div class="stat">
+                    <span class="stat-label">Humidity</span>
+                    <span class="stat-val">{{ weather.humidity }}%</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-label">Wind</span>
+                    <span class="stat-val">{{ weather.wind }} km/h</span>
+                </div>
+            </div>
+        </section>
+        {% else %}
+        {% if not error %}
+        <p class="msg msg-hint">City search cheythu weather nokku — mobile browser-il “Add to Home” cheythal app pole use cheyyam.</p>
+        {% endif %}
+        {% endif %}
+
+        {% if forecast %}
+        <section class="forecast-wrap" aria-label="5 day forecast">
+            <h3 class="section-title">Next days</h3>
+            <div class="forecast">
+                {% for day in forecast %}
+                <div class="fc-card">
+                    <span class="fc-day">{{ day.day }}</span>
+                    <img src="{{ img_base }}/{{ day.icon }}@2x.png" width="56" height="56" alt="">
+                    <span class="fc-temp">{{ day.temp }}°</span>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
     </div>
-    {% endif %}
 
-    <!-- 📅 FORECAST -->
-    {% if forecast %}
-    <div class="forecast">
-        {% for day in forecast %}
-        <div class="card">
-            <p>{{ day.day }}</p>
-            <img src="http://openweathermap.org/img/wn/{{ day.icon }}.png">
-            <p>{{ day.temp }}°C</p>
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-
-    <!-- ❌ ERROR -->
-    {% if error %}
-        <p class="error">{{ error }}</p>
-    {% endif %}
-
-</div>
-
+    <script src="{{ url_for('static', filename='app.js') }}" defer></script>
 </body>
 </html>
