@@ -1,80 +1,92 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Weather App 🌦</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
+<title>Weather Pro</title>
 
-<body class="{{ weather.desc if weather else '' }}">
+<style>
+body {
+    font-family: Arial;
+    text-align: center;
+    transition: 0.3s;
+}
 
-<div class="container">
-    <h1>🌦 Weather App</h1>
+.light { background: #74ebd5; color: black; }
+.dark { background: #1e1e1e; color: white; }
 
-    <form method="POST">
-        <input type="text" name="city" placeholder="Enter city..." required>
-        <button type="submit">Search</button>
-    </form>
+.card {
+    background: white;
+    padding: 20px;
+    margin: 20px;
+    border-radius: 15px;
+    display: inline-block;
+}
 
-    <button onclick="getLocation()">📍 Use My Location</button>
+.dark .card { background: #333; }
 
-    {% if weather %}
-    <div class="card">
-        <h2>{{ weather.city }}</h2>
-        <img src="http://openweathermap.org/img/wn/{{ weather.icon }}@2x.png">
-        <p>🌡 {{ weather.temp }}°C</p>
-        <p>{{ weather.desc }}</p>
-
-        <div class="extra">
-            💧 {{ weather.humidity }}% |
-            🌬 {{ weather.wind }} m/s
-        </div>
-    </div>
-    {% endif %}
-
-    <h3>Recent Searches</h3>
-    <ul>
-        {% for item in history %}
-        <li>{{ item }}</li>
-        {% endfor %}
-    </ul>
-</div>
+button {
+    padding: 10px;
+    margin: 5px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+}
+</style>
 
 <script>
+function toggleMode() {
+    document.body.classList.toggle("dark");
+}
+
 function getLocation() {
-    navigator.geolocation.getCurrentPosition(position => {
+    navigator.geolocation.getCurrentPosition(pos => {
         fetch("/location", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
+            headers: {"Content-Type": "application/json"},
             body: JSON.stringify({
-                lat: position.coords.latitude,
-                lon: position.coords.longitude
+                lat: pos.coords.latitude,
+                lon: pos.coords.longitude
             })
         })
         .then(res => res.json())
         .then(data => {
-            if (data.error) {
-                alert("Location not found 😢");
-            } else {
-                document.querySelector(".card")?.remove();
-
-                const card = document.createElement("div");
-                card.className = "card";
-
-                card.innerHTML = `
-                    <h2>${data.city}</h2>
-                    <img src="http://openweathermap.org/img/wn/${data.icon}@2x.png">
-                    <p>🌡 ${data.temp}°C</p>
-                    <p>${data.desc}</p>
-                `;
-
-                document.querySelector(".container").appendChild(card);
-            }
+            alert("📍 " + data.name + " : " + data.main.temp + "°C");
         });
     });
 }
 </script>
+
+</head>
+
+<body class="light">
+
+<h1>🌤 Weather Pro</h1>
+
+<button onclick="toggleMode()">🌙 Toggle Mode</button>
+<button onclick="getLocation()">📍 My Location</button>
+
+<form method="POST">
+    <input type="text" name="city" placeholder="Enter city" required>
+    <button type="submit">Search</button>
+</form>
+
+{% if weather %}
+<div class="card">
+    <h2>{{ weather.city }}</h2>
+    <img src="https://openweathermap.org/img/wn/{{ weather.icon }}@2x.png">
+    <h3>{{ weather.temp }}°C</h3>
+    <p>{{ weather.desc }}</p>
+</div>
+{% endif %}
+
+<h2>📊 5-Day Forecast</h2>
+
+{% for day in forecast %}
+<div class="card">
+    <p>{{ day.time }}</p>
+    <img src="https://openweathermap.org/img/wn/{{ day.icon }}.png">
+    <p>{{ day.temp }}°C</p>
+</div>
+{% endfor %}
 
 </body>
 </html>
