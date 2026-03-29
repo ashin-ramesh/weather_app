@@ -1,55 +1,136 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Weather App</title>
+    <title>Weather Mobile</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <style>
         body {
-            font-family: Arial;
-            text-align: center;
-            background: #0f172a;
+            margin: 0;
+            font-family: 'Segoe UI';
             color: white;
-            padding-top: 100px;
         }
+
+        .app {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .search {
+            display: flex;
+            gap: 10px;
+        }
+
         input {
-            padding: 10px;
-            width: 200px;
-            border-radius: 5px;
+            flex: 1;
+            padding: 12px;
+            border-radius: 25px;
             border: none;
+            outline: none;
         }
+
         button {
-            padding: 10px;
+            padding: 12px;
+            border-radius: 25px;
             border: none;
-            background: #38bdf8;
+            background: white;
             color: black;
-            border-radius: 5px;
             cursor: pointer;
         }
-        .box {
-            margin-top: 20px;
+
+        .main-weather {
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .temp {
+            font-size: 65px;
+            font-weight: bold;
+        }
+
+        .forecast {
+            margin-top: 30px;
+            display: flex;
+            overflow-x: auto;
+            gap: 12px;
+        }
+
+        .card {
+            min-width: 90px;
+            background: rgba(255,255,255,0.2);
+            padding: 12px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        img {
+            width: 50px;
+        }
+
+        .error {
+            color: #ff6b6b;
+            text-align: center;
         }
     </style>
 </head>
-<body>
 
-    <h1>🌦 Weather App</h1>
+<body
 
-    <form action="/location" method="POST">
-        <input type="text" name="city" placeholder="Enter city name">
-        <button type="submit">Search</button>
+{% if weather %}
+    {% if 'rain' in weather.description %}
+        style="background: linear-gradient(#373B44, #4286f4);"
+    {% elif 'clear' in weather.description %}
+        style="background: linear-gradient(#f7971e, #ffd200);"
+    {% elif 'cloud' in weather.description %}
+        style="background: linear-gradient(#757f9a, #d7dde8);"
+    {% else %}
+        style="background: linear-gradient(#4facfe, #00f2fe);"
+    {% endif %}
+{% else %}
+    style="background: linear-gradient(#4facfe, #00f2fe);"
+{% endif %}
+>
+
+<div class="app">
+
+    <!-- 🔍 SEARCH -->
+    <form method="POST" class="search">
+        <input type="text" name="city" placeholder="Search city..." required>
+        <button>🔍</button>
     </form>
 
-    <div class="box">
-        {% if weather %}
-            <h2>{{ weather.city }}</h2>
-            <p>🌡 Temperature: {{ weather.temperature }} °C</p>
-            <p>☁ Weather: {{ weather.description }}</p>
-            <p>💧 Humidity: {{ weather.humidity }}%</p>
-        {% endif %}
-
-        {% if error %}
-            <p style="color:red;">{{ error }}</p>
-        {% endif %}
+    <!-- 🌤 CURRENT WEATHER -->
+    {% if weather %}
+    <div class="main-weather">
+        <h2>{{ weather.city }}</h2>
+        <img src="http://openweathermap.org/img/wn/{{ weather.icon }}@2x.png">
+        <div class="temp">{{ weather.temperature }}°C</div>
+        <p>{{ weather.description }}</p>
+        <p>💧 {{ weather.humidity }}%</p>
     </div>
+    {% endif %}
+
+    <!-- 📅 FORECAST -->
+    {% if forecast %}
+    <div class="forecast">
+        {% for day in forecast %}
+        <div class="card">
+            <p>{{ day.day }}</p>
+            <img src="http://openweathermap.org/img/wn/{{ day.icon }}.png">
+            <p>{{ day.temp }}°C</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- ❌ ERROR -->
+    {% if error %}
+        <p class="error">{{ error }}</p>
+    {% endif %}
+
+</div>
 
 </body>
 </html>

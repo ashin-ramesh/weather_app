@@ -1,43 +1,59 @@
 from flask import Flask, render_template, request
 import requests
 import os
+import datetime
 
 app = Flask(__name__)
 
-# 🔑 Replace with your OpenWeather API key
+# 🔑 PUT YOUR API KEY HERE
 API_KEY = "fa476182e7c6a7459a3e4a3f4057b19d"
 
-@app.route('/')
+@app.route("/", methods=["GET", "POST"])
 def home():
-    return render_template("index.html")
+    weather = None
+    forecast = []
+    error = None
 
-@app.route('/location', methods=['POST'])
-def location():
-    city = request.form.get('city')
+    if request.method == "POST":
+        city = request.form.get("city")
 
-    if not city:
-        return render_template("index.html", error="Please enter a city name")
+        if city:
+            # 🔹 Current Weather
+            url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
+            res = requests.get(url)
 
-    url = f"http://api.openweathermap.org/data/2.5/weather?q={city}&appid={API_KEY}&units=metric"
+            if res.status_code == 200:
+                data = res.json()
 
-    response = requests.get(url)
+                weather = {
+                    "city": data["name"],
+                    "temperature": data["main"]["temp"],
+                    "description": data["weather"][0]["description"],
+                    "humidity": data["main"]["humidity"],
+                    "icon": data["weather"][0]["icon"]
+                }
 
-    if response.status_code != 200:
-        return render_template("index.html", error="City not found!")
+                # 🔹 5 Day Forecast
+                f_url = f"http://api.openweathermap.org/data/2.5/forecast?q={city}&appid={API_KEY}&units=metric"
+                f_res = requests.get(f_url)
+                f_data = f_res.json()
 
-    data = response.json()
+                for i in range(0, 40, 8):  # 5 days
+                    day = f_data["list"][i]
 
-    weather_data = {
-        "city": data["name"],
-        "temperature": data["main"]["temp"],
-        "description": data["weather"][0]["description"],
-        "humidity": data["main"]["humidity"]
-    }
+                    forecast.append({
+                        "temp": day["main"]["temp"],
+                        "icon": day["weather"][0]["icon"],
+                        "day": datetime.datetime.fromtimestamp(day["dt"]).strftime('%a')
+                    })
 
-    return render_template("index.html", weather=weather_data)
+            else:
+                error = "City not found!"
+
+    return render_template("index.html", weather=weather, forecast=forecast, error=error)
 
 
-# 🔥 IMPORTANT FOR RENDER
+# 🔥 RENDER DEPLOY FIX
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 10000))
     app.run(host="0.0.0.0", port=port)
