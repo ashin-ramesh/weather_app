@@ -1,11 +1,15 @@
+from pathlib import Path
+
 from flask import Flask, render_template, request
 import requests
 import os
 import datetime
 
+_ROOT = Path(__file__).resolve().parent
 try:
     from dotenv import load_dotenv
-    load_dotenv()
+
+    load_dotenv(_ROOT / ".env")
 except ImportError:
     pass
 
